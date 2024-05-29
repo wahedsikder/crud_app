@@ -1,13 +1,13 @@
 import 'dart:convert';
 
-import 'package:crud_app/product.dart';
+import 'package:crud_app/product_model.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 
 class UpdateProductScreen extends StatefulWidget {
   const UpdateProductScreen({super.key, required this.product});
 
-  final Product product;
+  final ProductModel product;
 
   @override
   State<UpdateProductScreen> createState() => _UpdateProductScreenState();
@@ -28,12 +28,12 @@ class _UpdateProductScreenState extends State<UpdateProductScreen> {
   @override
   void initState() {
     super.initState();
-    _nameTEController.text = widget.product.productName;
-    _unitPriceTEController.text = widget.product.unitPrice;
-    _productCodeTEController.text = widget.product.productCode;
-    _quantityTEController.text = widget.product.quantity;
-    _totalPriceTEController.text = widget.product.totalPrice;
-    _imageTEController.text = widget.product.image;
+    _nameTEController.text = widget.product.productName ?? '';
+    _unitPriceTEController.text = widget.product.unitPrice ?? '';
+    _productCodeTEController.text = widget.product.productCode ?? '';
+    _quantityTEController.text = widget.product.quantity ?? '';
+    _totalPriceTEController.text = widget.product.totalPrice ?? '';
+    _imageTEController.text = widget.product.image ?? '';
   }
 
   @override
@@ -184,7 +184,7 @@ class _UpdateProductScreenState extends State<UpdateProductScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Product updated")),
       );
-      Navigator.pop(context);
+      Navigator.pop(context, true);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(

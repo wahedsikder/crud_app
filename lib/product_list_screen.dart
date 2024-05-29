@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:crud_app/add_product.dart';
-import 'package:crud_app/product.dart';
+import 'package:crud_app/product_model.dart';
 import 'package:crud_app/update_product.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
@@ -15,7 +15,7 @@ class ProductListScreen extends StatefulWidget {
 
 class _ProductListScreenState extends State<ProductListScreen> {
   bool _getProductListInprogress = false;
-  List<Product> productList = [];
+  List<ProductModel> productList = [];
 
   @override
   void initState() {
@@ -72,17 +72,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
     if (response.statusCode == 200) {
       final decodedData = jsonDecode(response.body);
       final jsonProductList = decodedData['data'];
-      for (Map<String, dynamic> p in jsonProductList) {
-        Product product = Product(
-          id: p['_id'] ?? '',
-          productName: p['ProductName'] ?? '',
-          productCode: p['ProductCode'] ?? '',
-          image: p['Img'] ?? '',
-          unitPrice: p['UnitPrice'] ?? '',
-          quantity: p['Qty'] ?? '',
-          totalPrice: p['TotalPrice'] ?? '',
-        );
-        productList.add(product);
+      for (Map<String, dynamic> json in jsonProductList) {
+        ProductModel productModel = ProductModel.fromJson(json);
+        productList.add(productModel);
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -96,13 +88,13 @@ class _ProductListScreenState extends State<ProductListScreen> {
     setState(() {});
   }
 
-  Widget _buildProductItem(Product product) {
+  Widget _buildProductItem(ProductModel product) {
     return ListTile(
       leading: Image.network(
-        product.image,
+        product?.image ?? 'Unknown',
         height: 60,
       ),
-      title: Text(product.productName),
+      title: Text(product?.productName ?? 'Unknown'),
       subtitle: Wrap(
         spacing: 6,
         children: [
@@ -115,17 +107,23 @@ class _ProductListScreenState extends State<ProductListScreen> {
         children: [
           IconButton(
             icon: const Icon(Icons.edit),
-            onPressed: () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) =>  UpdateProductScreen(product: product,)));
+            onPressed: () async {
+              final result = Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => UpdateProductScreen(
+                          product: product,
+                        )),
+              );
+              if (result == true){
+                _getProductList();
+              }
             },
           ),
           IconButton(
             icon: const Icon(Icons.delete),
             onPressed: () {
-              _showDeleteConfirmation();
+              _showDeleteConfirmation(product.id!);
             },
           ),
         ],
@@ -133,7 +131,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
     );
   }
 
-  void _showDeleteConfirmation() {
+  void _showDeleteConfirmation(String productId) {
     showDialog<void>(
       context: context,
       barrierDismissible: false,
@@ -152,12 +150,38 @@ class _ProductListScreenState extends State<ProductListScreen> {
             TextButton(
               child: const Text('Yes, delete'),
               onPressed: () {
-                Navigator.pop(context); // Dismiss alert dialog
+                _deleteProduct(productId); // Dismiss alert dialog
               },
             ),
           ],
         );
       },
     );
+  }
+
+  Future<void> _deleteProduct(String productId) async {
+    _getProductListInprogress = true;
+    setState(() {});
+    productList.clear();
+    String deleteProductUrl =
+        "https://crud.teamrabbil.com/api/v1/DeleteProduct/$productId";
+    Uri uri = Uri.parse(deleteProductUrl);
+    Response response = await get(uri);
+
+    print(response.body);
+    print(response.headers);
+
+    if (response.statusCode == 200) {
+      _getProductList();
+    } else {
+      _getProductListInprogress = false;
+      setState(() {});
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: const Text(
+          "Delete product failed. Try again!",
+          style: TextStyle(color: Colors.red),
+        ),
+      ));
+    }
   }
 }
