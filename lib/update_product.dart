@@ -201,6 +201,7 @@ class _UpdateProductScreenState extends State<UpdateProductScreen> {
   void dispose() {
     _nameTEController.dispose();
     _unitPriceTEController.dispose();
+    _productCodeTEController.dispose();
     _quantityTEController.dispose();
     _totalPriceTEController.dispose();
     _imageTEController.dispose();

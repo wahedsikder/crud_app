@@ -194,6 +194,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
   void dispose() {
     _nameTEController.dispose();
     _unitPriceTEController.dispose();
+    _productCodeTEController.dispose();
     _quantityTEController.dispose();
     _totalPriceTEController.dispose();
     _imageTEController.dispose();
